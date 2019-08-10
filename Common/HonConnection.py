@@ -70,3 +70,10 @@ def RecieveWithAES(socket, key):
     else:
         print('Message Integrity Check Failed\nTerminating...')
         exit()
+
+def SendTupleWithAES(socket, key, unecryptedPayload):
+    unecryptedPayload = pickle.dumps(unecryptedPayload)
+    SendWithAES(socket, key, unecryptedPayload)
+
+def RecieveTupleWithAES(socket, key):
+    return pickle.loads(RecieveWithAES(socket, key))

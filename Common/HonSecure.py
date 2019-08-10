@@ -16,12 +16,12 @@ import ast
 import base64
 import hashlib
 import binascii
+import pickle
 
 """
 General Cryptographic Functions
 """
 def GenerateRandomKey(keyByteLength):
-    print('Generating random key of length ' + str(keyByteLength) + ' bytes')
     key = get_random_bytes(keyByteLength)
     return key
 
@@ -60,8 +60,14 @@ def VerifyHashWithSalt(hash, payload, salt):
     return hashObj.hexdigest() == hash
 
 def GenerateSaltedHash(payload):
-    salt = GenerateRandomSalt(16)
+    salt = pickle.dumps(GenerateRandomSalt(16))
     return (GenerateHashWithSalt(payload, salt), salt)
+
+def GenerateHashForPassword(password):
+    salt = GenerateRandomSalt
+    return GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt))
+
+#print (GenerateHashForPassword('test'))
 
 """
 RSA Cryptographic Functions
