@@ -11,6 +11,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.Hash import SHA256
 
 # Import Others
+import os
 import ast
 import base64
 import hashlib
@@ -24,19 +25,44 @@ def GenerateRandomKey(keyByteLength):
     key = get_random_bytes(keyByteLength)
     return key
 
+def GenerateRandomSalt(length):
+    salt = base64.b64encode(os.urandom(length))
+    return salt
+
 """
 SHA256 Hashing Cryptographic Functions
 """
 
 # Data must be a byte string or byte array.
 def GenerateHash(payload):
-    hash_object = SHA256.new(data=payload)
-    return hash_object.digest()
+    hashObj = SHA256.new(data=payload)
+    return hashObj.hexdigest()
 
+# Hash in hexdigest format
 def VerifyHash(hash, payload):
-    hash_object = SHA256.new(data=payload)
-    return hash_object.digest() == hash
+    hashObj = SHA256.new(data=payload)
+    return hashObj.hexdigest() == hash
 
+def GenerateHashWithSalt(payload, salt):
+    hashObj = SHA256.new(data=payload)
+    hashObj.update(salt)
+    return (hashObj.hexdigest())
+
+# Hash in hexdigest format
+def VerifyHashWithSalt(hash, payload, salt):
+    hashObj = SHA256.new(data=payload)
+    hashObj.update(salt)
+    return hashObj.hexdigest() == hash
+
+def GenerateSaltedHash(payload):
+    salt = GenerateRandomSalt(16)
+    return (GenerateHashWithSalt(payload, salt), salt)
+
+print ('passwordClient')
+print (GenerateSaltedHash(b'passwordClient'))
+
+print ('passwordServer')
+print (GenerateSaltedHash(b'passwordServer'))
 
 """
 RSA Cryptographic Functions
