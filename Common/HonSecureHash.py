@@ -13,4 +13,4 @@ with open(filename, "rb") as f:
 if providedhash != sha256_hash.hexdigest():
     print("The hash that you have provided does not match the hash that we have just calculated!")
 else:
-    print("The hash that you have provided matches the hash that we have just calcuated!")
+    print("The hash that you have provided matches the hash that we have just calculated!")
