@@ -11,6 +11,7 @@ from Crypto import Random
 import ast
 import base64
 
+
 # Returns a randomly generated rsa key.
 def GenerateRSAKeys():
     random_generator = Random.new().read
@@ -38,7 +39,7 @@ def SaveRSAKeysToDisk(key, keyFolder):
 
 
 # Returns the keys saved to disk given the folder of the keys.
-def ReadRSAKeysFromDisk(keyFolder): #keyFolder
+def ReadRSAKeysFromDisk(keyFolder):
     privateKeyFile = keyFolder + "/private.pem"
     publicKeyFile = keyFolder + "/public.pem"
 

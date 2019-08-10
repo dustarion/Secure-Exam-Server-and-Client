@@ -54,5 +54,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
             # Decrypt challenge string with clients public key, verify the challenge string matches.
             
+            # Secure Connection Established
+
+
+
+            
     
     s.close
