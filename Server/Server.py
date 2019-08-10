@@ -9,27 +9,17 @@
 import sys, traceback
 import os , re, time
 import socket, ssl
-import thread
-#import socketserver
-#import pickle
-# import utility file!
-sys.path.append(os.path.abspath("../common"))
+import socketserver
+import pickle
+
+# Import Common Utility Files
+sys.path.append(os.path.abspath("../Common"))
 from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
 
-# Handle A New Client Connection
-def on_new_client(clientsocket,addr):
-    while True:
-        msg = clientsocket.recv(1024)
-        #do some checks and if msg == someWeirdSignal: break:
-        print (addr, ' >> ', msg)
-        msg = raw_input('SERVER >> ')
-        #Maybe some code to compute the last digit of PI, play game or anything else can go here and when you are done.
-        clientsocket.sendall(msg)
-    clientsocket.close()
+# Import Server Utility Files
+sys.path.append(os.path.abspath("/ServerUtils"))
 
 
-
-s = socket.socket()
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 
@@ -45,42 +35,24 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     while ServerShouldRun: # Run the server continuously
         conn, addr = s.accept() # Accept Connection from Client
-        thread.start_new_thread(on_new_client,(c,addr))
+        with conn:
+            print('Connected by Client', addr)
+            data = conn.recv(1024)
+            if not data:
+                print('Recieved ')
+                break
+            conn.sendall(data)
 
+            # Recieve a session key which is decrypted using server private key.
+            
+            # Use Session Key to Descrypt and Encrypt from this point onwards.
+
+            # Request Client Identity
+
+            # Receive Client Identity, Compare UserID and Password Hash with server database.
+            # Send Server Repo Owner ID, Password Hash, Random Challenge String
+
+            # Decrypt challenge string with clients public key, verify the challenge string matches.
+            
+    
     s.close
-
-
-
-
-        # with conn:
-        #     print('Connected by Client', addr)
-        #     while True:
-        #         data = conn.recv(1024)
-        #         if not data:
-        #             break
-        #         conn.sendall(data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -17,36 +17,40 @@ import socket, ssl
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
 
+# Temporary Cryptography Protocols
+PrivateKey = 'asda'
+PublicKey = 'dasd'
+ServerPublicKey = ''
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #try:
     s.connect((HOST, PORT))
-    s.sendall(b'Hello, world')
-    data = s.recv(1024)
+    while True:
+        s.sendall(b'Hello, world')
+        data = s.recv(1024)
+        print('Received', repr(data))
 
-print('Received', repr(data))
+        # Generate Session Key
 
+        # Encrypt Session Key with Public Key of Server
 
+        # Use Session Key to Descrypt and Encrypt from this point onwards.
 
+        # Recieve request for client identity
+        # Send Clients UserID and Password Hash
 
+        # Recieve Repo Owner ID and Password Hash (Also a random challenge string)
+        # Compare with Local Database
 
+        # Encrypt Challenge String with Private Key.
 
+        # Recieve successful response.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # Secure Connection Established
 
 
 
 
+    #catch:
 
-
-
+#print('Received', repr(data))
