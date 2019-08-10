@@ -16,6 +16,7 @@ import struct
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../Common"))
 from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+from HonConnection import sendMsg, recvMsg, recvall, SendWithAes, RecieveWithAES
 
 # Import Crypto Utility Files
 from HonSecure import GenerateRandomKey, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
@@ -30,32 +31,6 @@ PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 # Temporary Cryptography Protocols
 ServerKeyFolder = 'ServerData/ServerKeys'
 ClientPublicKeyFolder = 'ServerData/PublicKeys/Client1'
-
-# Connection Protocol
-def sendMsg(sock, msg):
-    # Prefix each message with a 4-byte length (network byte order)
-    msg = struct.pack('>I', len(msg)) + msg
-    sock.sendall(msg)
-
-def recvMsg(sock):
-    # Read message length and unpack it into an integer
-    raw_msglen = recvall(sock, 4)
-    if not raw_msglen:
-        return None
-    msglen = struct.unpack('>I', raw_msglen)[0]
-    # Read the message data
-    return recvall(sock, msglen)
-
-def recvall(sock, n):
-    # Helper function to recv n bytes or return None if EOF is hit
-    data = b''
-    while len(data) < n:
-        packet = sock.recv(n - len(data))
-        if not packet:
-            return None
-        data += packet
-    return data
-
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -80,13 +55,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
             # Recieve a session key which is decrypted using server private key.
             ServerKey = ReadRSAKeysFromDisk(ServerKeyFolder)
-            EncryptedSessionKey = int(data.decode("utf-8"))
+            EncryptedSessionKey = data
             SessionKey = DecryptWithRSA(ServerKey[0], EncryptedSessionKey)
-            print(SessionKey)
 
             # Use Session Key to Descrypt and Encrypt from this point onwards.
 
             # Request Client Identity
+            SendWithAes(conn, SessionKey, 'RequestClientIdentity')
+
+
 
             # Receive Client Identity, Compare UserID and Password Hash with server database.
             # Send Server Repo Owner ID, Password Hash, Random Challenge String
