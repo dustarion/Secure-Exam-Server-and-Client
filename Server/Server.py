@@ -16,7 +16,7 @@ import struct
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../Common"))
 from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
-from HonConnection import sendMsg, recvMsg, recvall, SendWithAes, RecieveWithAES
+from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 
 # Import Crypto Utility Files
 from HonSecure import GenerateRandomKey, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
@@ -61,7 +61,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             # Use Session Key to Descrypt and Encrypt from this point onwards.
 
             # Request Client Identity
-            SendWithAes(conn, SessionKey, 'RequestClientIdentity')
+            SendWithAES(conn, SessionKey, 'RequestClientIdentity')
 
 
 

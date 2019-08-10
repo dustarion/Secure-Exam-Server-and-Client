@@ -31,6 +31,11 @@ def GenerateRandomSalt(length):
 
 """
 SHA256 Hashing Cryptographic Functions
+# print ('passwordClient')
+# print (GenerateSaltedHash(b'passwordClient'))
+
+# print ('passwordServer')
+# print (GenerateSaltedHash(b'passwordServer'))
 """
 
 # Data must be a byte string or byte array.
@@ -57,12 +62,6 @@ def VerifyHashWithSalt(hash, payload, salt):
 def GenerateSaltedHash(payload):
     salt = GenerateRandomSalt(16)
     return (GenerateHashWithSalt(payload, salt), salt)
-
-print ('passwordClient')
-print (GenerateSaltedHash(b'passwordClient'))
-
-print ('passwordServer')
-print (GenerateSaltedHash(b'passwordServer'))
 
 """
 RSA Cryptographic Functions

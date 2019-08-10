@@ -13,7 +13,7 @@ import struct
 from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
 
 # Import Crypto Utility Files
-from HonSecure import GenerateRandomKey, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
+from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
 # General Connection Protocol
 def sendMsg(sock, msg):
@@ -44,7 +44,10 @@ def recvall(sock, n):
 def SendWithAES(socket, key, unecryptedPayload):
     encryptedMsg = EncryptWithAES(key, unecryptedPayload)
     # encryptedMsg is a tuple -> (iv, cipherdata)
-    msg = (encryptedMsg[0], encryptedMsg[1])
+    temp = (encryptedMsg[0], encryptedMsg[1])
+    hash = GenerateSaltedHash(pickle.dumps(temp).strip())
+    msg = (temp, hash[0], hash[1])
+
     # Send request to client
     Payload = pickle.dumps(msg)
     sendMsg(socket, Payload)
@@ -55,6 +58,15 @@ def RecieveWithAES(socket, key):
         print('Recieved ')
         return ''
     RecievedPayload = pickle.loads(data)
-    iv = RecievedPayload[0]
-    msg = DecryptWithAES(key, iv, RecievedPayload[1])
-    return msg
+    temp = RecievedPayload[0]
+    hash = RecievedPayload[1]
+    salt = RecievedPayload[2]
+
+    if VerifyHashWithSalt(hash, pickle.dumps(temp).strip(), salt):
+        # Hash Matches
+        iv = temp[0]
+        msg = DecryptWithAES(key, iv, temp[1])
+        return msg
+    else:
+        print('Message Integrity Check Failed\nTerminating...')
+        exit()
