@@ -182,3 +182,34 @@ print ('decrypted', decrypted)
 # f.write(str(message))
 # f.write(str(decrypted))
 # f.close()
+
+
+# data = "I met aliens in UFO. Here is the map.".encode("utf-8")
+# file_out = open("encrypted_data.bin", "wb")
+
+key = RSA.generate(2048)
+session_key = get_random_bytes(16)
+print(session_key)
+
+recipient_key = key.publickey()
+
+# Encrypt the session key with the public RSA key
+cipher_rsa = PKCS1_OAEP.new(recipient_key)
+enc_session_key = cipher_rsa.encrypt(session_key)
+
+# Encrypt the data with the AES session key
+cipher_aes = AES.new(session_key, AES.MODE_EAX)
+ciphertext, tag = cipher_aes.encrypt_and_digest(data)
+[ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
+
+private_key = key
+
+# Decrypt the session key with the private RSA key
+cipher_rsa = PKCS1_OAEP.new(private_key)
+session_key2 = cipher_rsa.decrypt(enc_session_key)
+print (session_key2)
+
+# Decrypt the data with the AES session key
+# cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+# data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+# print(data.decode("utf-8"))

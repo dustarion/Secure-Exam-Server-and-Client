@@ -4,9 +4,10 @@
 # Import Crypto
 import Crypto
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Crypto import Random
+from Crypto.Random import get_random_bytes
+from Crypto.Cipher import AES, PKCS1_OAEP
 
 # Import Others
 import ast
@@ -19,7 +20,7 @@ General Cryptographic Functions
 """
 def GenerateRandomKey(keyByteLength):
     print('Generating random key of length ' + str(keyByteLength) + ' bytes')
-    key = Crypto.Random.get_random_bytes(keyByteLength)
+    key = get_random_bytes(keyByteLength)
     return key
 
 """
@@ -27,10 +28,8 @@ RSA Cryptographic Function
 """
 # Returns a randomly generated rsa key.
 def GenerateRSAKeys():
-    random_generator = Random.new().read
     # Generate public and private key
-    key = RSA.generate(1024, random_generator)
-    publickey = key.publickey()
+    key = RSA.generate(2048)
     print('Successfully generated RSA key.')
     return (key)
 
@@ -57,14 +56,12 @@ def ReadRSAKeysFromDisk(keyFolder):
     publicKeyFile = keyFolder + "/public.pem"
 
     # Private Key
-    privHandle = open(privateKeyFile, 'rb')
-    key = RSA.importKey(privHandle.read())
-    privHandle.close()
+    privHandle = open(privateKeyFile, 'rb').read()
+    key = RSA.importKey(privHandle)
 
     # Public Key
-    pubHandle = open(publicKeyFile, 'rb')
-    publicKey = RSA.importKey(pubHandle.read())
-    pubHandle.close()
+    pubHandle = open(publicKeyFile, 'rb').read()
+    publicKey = RSA.importKey(pubHandle)
 
     return (key, publicKey)
 
@@ -72,17 +69,20 @@ def ReadRSAPublicKeyFromDisk(keyFolder):
     publicKeyFile = keyFolder + "/public.pem"
 
     # Public Key
-    pubHandle = open(publicKeyFile, 'rb')
-    publicKey = RSA.importKey(pubHandle.read())
-    pubHandle.close()
+    pubHandle = open(publicKeyFile, 'rb').read()
+    publicKey = RSA.importKey(pubHandle)
 
     return publicKey
 
-def EncryptWithRSA(publickey, data):
-    return publickey.encrypt(32, data)[0] # For some reason it's a tuple
+def EncryptWithRSA(publicKey, sessionKey):
+    cipherRSA = PKCS1_OAEP.new(publicKey)
+    encryptedSessionKey = cipherRSA.encrypt(sessionKey)
+    return encryptedSessionKey
 
-def  DecryptWithRSA(key, encryptedData):
-    return key.decrypt(ast.literal_eval(str(encryptedData))) # For some reason it's a tuple
+def  DecryptWithRSA(key, encryptedSessionKey):
+    cipherRSA = PKCS1_OAEP.new(key)
+    sessionKey = cipherRSA.decrypt(encryptedSessionKey)
+    return sessionKey
 
 
 """
@@ -104,11 +104,6 @@ AESKeyBytes = 32
 def GenerateAESKey():
     # 256 Bit Keys
     return GenerateRandomKey(32)
-
-# # Generate a random 16 byte initialisation vector.
-# def GenerateIV():
-#     # 128 Bit Blocks
-#     return GenerateRandomKey(16)
 
 # Takes as input a 32-byte key and an arbitrary-length data.
 # Returns a pair (iv, ciphterdata). "iv" stands for initialization vector.
@@ -144,41 +139,3 @@ def DecryptWithAES(key, iv, cipherdata):
     # Decrypt and return the plaintext.
     data = aes.decrypt(cipherdata)
     return data
-
-
-
-
-
-
-# Sample Code Dump (Delete Later)
-# def EncryptWithRSA(Str text):
-#     encrypted = publickey.encrypt(32, 'encrypt this message')
-
-
-
-
-#class HonSecure():
-random_generator = Random.new().read
-key = RSA.generate(1024, random_generator) #generate pub and priv key
-publickey = key.publickey() # pub key export for exchange
-
-encrypted = publickey.encrypt(32, 'encrypt this message')
-# #message to encrypt is in the above line 'encrypt this message'
-
-print ('encrypted message:', encrypted) #ciphertext
-# f = open ('encryption.txt', 'w')
-# f.write(str(encrypted)) #write ciphertext to file
-# f.close()
-
-# #decrypted code below
-
-# f = open('encryption.txt', 'r')
-# message = f.read()
-
-decrypted = key.decrypt(ast.literal_eval(str(encrypted)))
-print ('decrypted', decrypted)
-
-# f = open ('encryption.txt', 'w')
-# f.write(str(message))
-# f.write(str(decrypted))
-# f.close()
