@@ -8,6 +8,7 @@ from Crypto.Util import Counter
 from Crypto import Random
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Hash import SHA256
 
 # Import Others
 import ast
@@ -24,7 +25,21 @@ def GenerateRandomKey(keyByteLength):
     return key
 
 """
-RSA Cryptographic Function
+SHA256 Hashing Cryptographic Functions
+"""
+
+# Data must be a byte string or byte array.
+def GenerateHash(payload):
+    hash_object = SHA256.new(data=payload)
+    return hash_object.digest()
+
+def VerifyHash(hash, payload):
+    hash_object = SHA256.new(data=payload)
+    return hash_object.digest() == hash
+
+
+"""
+RSA Cryptographic Functions
 """
 # Returns a randomly generated rsa key.
 def GenerateRSAKeys():
@@ -86,15 +101,8 @@ def  DecryptWithRSA(key, encryptedSessionKey):
 
 
 """
-AES Cryptographic Function
+AES Cryptographic Functions
 We use AES256 for all AES related operations.
-
-def SampleAESImplementation():
-    key = GenerateAESKey()
-    data = str.encode('Hello World!')
-    EData = EncryptWithAES(key, data)
-    iv = EData[0]
-    print(DecryptWithAES(key, iv, EData[1]))
 """
 
 # AES Settings
