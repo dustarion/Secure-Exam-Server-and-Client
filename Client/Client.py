@@ -23,7 +23,8 @@ from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
 # Import Client Utility Files
-sys.path.append(os.path.abspath("/ClientUtils"))
+sys.path.append(os.path.abspath("../Client/ClientUtils"))
+from ClientUtils import EstablishSecureClientConnection
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
@@ -32,72 +33,61 @@ PORT = 65432        # The port used by the server
 ClientKeyFolder = 'ClientData/ClientKeys'
 ServerPublicKeyFolder = 'ClientData/PublicKeys/Server'
 
-
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #try:
-    s.connect((HOST, PORT))
-    # while True:
-        # s.sendall(b'Hello, world')
-        # data = s.recv(1024)
-        # print('Received', repr(data))
+    try:
+        s.connect((HOST, PORT))
 
-    # Generate Session Key
-    SessionKey = GenerateAESKey()
+        # Establish Secure Connection and Obtain Session Key
+        SessionKey = EstablishSecureClientConnection(s, ClientKeyFolder, ServerPublicKeyFolder)
 
-    # Encrypt Session Key with Public Key of Server
-    ServerPublicKey = ReadRSAPublicKeyFromDisk(ServerPublicKeyFolder)
-    Payload = EncryptWithRSA(ServerPublicKey, SessionKey) #bytes(, encoding='utf8')
+    except ConnectionRefusedError:
+        print('\nUnable to Connect To Server.\nEnsure the server is on.\nTerminating...')
+        exit(-1)
 
-    sendMsg(s, Payload)
+class Exam_client:
 
-    # Use Session Key to Descrypt and Encrypt from this point onwards.
+    # Temporary Network Configuration
+    # Read META file to obtain Network Configuration
+    HOST, PORT = "localhost", 9999
 
-    # Recieve request for client identity
-    request = RecieveWithAES(s, SessionKey)
-    if request != b'RequestClientIdentity':
-        print('Recieved Unknown Request\nTerminating...')
-        exit()
+    # A class method to display the program usage
+    def usage(argv):
+        print(f"Usage: {argv[0]} "+" {-i | -L | -u | -r | -f}")
+        print("required optins:")
+        print("-i : META INFO initalization at current directory")
+        print("-L : List all payloads")
+        print("-u : upload examination payload from upload directory")
+        print("-r : retrive examintion payload and save in download directory")
+
+    # Class Initialisation
+    # Load the Meta File
+    def __init__(self):
+        self.block_size = 1024
+        self.timeout_in_seconds = Exam_Helper.timeout_in_seconds  # default socket timeout 
+        self.my_input = Exam_Helper.my_input # link to external helper function
+        self.repo_owner_id = "" # SOC Exam Repo Owner id
+        self.server_ip, self.server_port = "localhost", "9999" # initialize with default value
+        self.staff_id, self.mod_code, self.exam_fn, self.sol_fn = "","","",""
+        #The first task is to check if META file exist
+        #if not, must prompt for the META info.
+        exists = os.path.isfile('META.info')
+        if not exists:
+            self.init_meta()
+        else:
+            # load in pre-defined meta info
+            try:
+                with open('META.info') as meta:
+                    self.server_ip=meta.readline().strip()
+                    self.server_port=meta.readline().strip()
+                    self.repo_owner_id=meta.readline().strip()
+                    self.repo_owner_password_hash=meta.readline().strip()
+                    self.staff_id=meta.readline().strip()
+                    self.mod_code=meta.readline().strip()
+                    if self.mod_code != None and len(self.mod_code) > 0:
+                        self.exam_fn=meta.readline().strip()
+                        self.sol_fn=meta.readline().strip()
+                    meta.close()
+            except:
+                print("Corrupted Meta file, please initialize again")
+                sys.exit(-1)
     
-    # Send Clients UserID and Password Hash
-    salt = "KE9C2mx6225XcC5isRIa/g=="
-    userID = '2'
-    password = 'passwordClient' 
-    print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
-    #userID = input('Enter your UserID: ')
-    #password = getpass.getpass()
-
-    clientIdentity = (userID, GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt)))
-    SendTupleWithAES(s, SessionKey, clientIdentity)
-
-    # Recieve Repo Owner ID and Password Hash (Also a random challenge string)
-    # Compare with Local Database
-    ServerPasswordHash = 'e541fc35f5a53d83b815042a21af51fba903c03321c61f7ca1d883f9bf52df63' 
-    RecievedPayload = RecieveTupleWithAES(s, SessionKey)
-    EncryptedChallengeString = RecievedPayload[0]
-    ServerIdentity = RecievedPayload[1]
-    if (ServerIdentity) != ('1', ServerPasswordHash):
-        print('Recieved Unknown Request\nTerminating...')
-        exit()
-    
-    # Encrypt Challenge String with Private Key.
-    ClientKey = ReadRSAKeysFromDisk(ClientKeyFolder)
-    ChallengeString = DecryptWithRSA(ClientKey[0], EncryptedChallengeString)
-
-    # Send to Server
-    SendWithAES(s, SessionKey, ChallengeString)
-
-    # Recieve successful response.
-    response = RecieveWithAES(s, SessionKey)
-    if response != b'Success':
-        print('Recieved Unknown Request\nTerminating...')
-        exit()
-
-    # Secure Connection Established
-    print('Secure Connection Established')
-    
-
-
-
-    #catch:
-
-#print('Received', repr(data))

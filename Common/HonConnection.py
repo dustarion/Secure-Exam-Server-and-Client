@@ -45,8 +45,8 @@ def SendWithAES(socket, key, unecryptedPayload):
     encryptedMsg = EncryptWithAES(key, unecryptedPayload)
     # encryptedMsg is a tuple -> (iv, cipherdata)
     temp = (encryptedMsg[0], encryptedMsg[1])
-    hash = GenerateSaltedHash(pickle.dumps(temp).strip())
-    msg = (temp, hash[0], hash[1])
+    hash = GenerateHash(pickle.dumps(temp).strip())
+    msg = (temp, hash)
 
     # Send request to client
     Payload = pickle.dumps(msg)
@@ -60,9 +60,8 @@ def RecieveWithAES(socket, key):
     RecievedPayload = pickle.loads(data)
     temp = RecievedPayload[0]
     hash = RecievedPayload[1]
-    salt = RecievedPayload[2]
 
-    if VerifyHashWithSalt(hash, pickle.dumps(temp).strip(), salt):
+    if VerifyHash(hash, pickle.dumps(temp).strip()):
         # Hash Matches
         iv = temp[0]
         msg = DecryptWithAES(key, iv, temp[1])

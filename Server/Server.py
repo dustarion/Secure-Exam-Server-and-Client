@@ -23,7 +23,8 @@ from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
 # Import Server Utility Files
-sys.path.append(os.path.abspath("/ServerUtils"))
+sys.path.append(os.path.abspath("../Server/ServerUtils"))
+from ServerUtils import EstablishSecureServerConnection
 
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
@@ -43,58 +44,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     # Server Setup
     ServerShouldRun = True
     ClientList = []
-
+2
     while ServerShouldRun: # Run the server continuously
         conn, addr = s.accept() # Accept Connection from Client
         with conn:
             print('Connected by Client', addr)
-            
             data = recvMsg(conn)
             if not data:
-                print('Recieved ')
-                break
-
-            # Recieve a session key which is decrypted using server private key.
-            ServerKey = ReadRSAKeysFromDisk(ServerKeyFolder)
-            ClientPublicKey = ReadRSAPublicKeyFromDisk(ClientPublicKeyFolder)
-            EncryptedSessionKey = data
-            SessionKey = DecryptWithRSA(ServerKey[0], EncryptedSessionKey)
-
-            # Use Session Key to Descrypt and Encrypt from this point onwards.
-
-            # Request Client Identity
-            SendWithAES(conn, SessionKey, 'RequestClientIdentity')
-
-            # Receive Client Identity, Compare UserID and Password Hash with server database.
-            ClientPasswordHash = '073f9dd9d134206828ea34f8d1c81b5150973fe7c470358f4e59528f8bc284a8'
-            clientIdentity = RecieveTupleWithAES(conn, SessionKey)
-            if (clientIdentity) != ('2', ClientPasswordHash):
                 print('Recieved Unknown Request\nTerminating...')
-                exit()
-
-            # Send Server Repo Owner ID, Password Hash, Random Challenge String
-            salt = "b'qSIkoYy8uPzdAGET9/5aRA=='"
-            ownerID = '1'
-            password = 'passwordServer' 
-            print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
-            #ownerID = input('Enter your OwnerID: ')
-            #password = getpass.getpass()
-            challengeString = pickle.dumps(GenerateRandomSalt(16))
-            encryptedChallengeString = EncryptWithRSA(ClientPublicKey, challengeString)
-
-            serverIdentity = (ownerID, GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt)))
-            payload = (encryptedChallengeString, serverIdentity)
-            SendTupleWithAES(conn, SessionKey, payload)
-
-            # Decrypt challenge string verify the challenge string matches.
-            RecievedChallengeString = RecieveWithAES(conn, SessionKey)
-            if challengeString != RecievedChallengeString:
-                print('Recieved Unknown Request\nTerminating...')
-                exit()
-
-            # Secure Connection Established
-            SendWithAES(conn, SessionKey, b'Success')
-            print('Secure Connection Established')
+                exit(-1)
+            
+            SessionKey = EstablishSecureServerConnection(conn, ServerKeyFolder, ClientPublicKeyFolder, data)
 
 
 
