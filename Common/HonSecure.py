@@ -60,14 +60,14 @@ def VerifyHashWithSalt(hash, payload, salt):
     return hashObj.hexdigest() == hash
 
 def GenerateSaltedHash(payload):
-    salt = pickle.dumps(GenerateRandomSalt(16))
+    salt = GenerateRandomSalt(16)
     return (GenerateHashWithSalt(payload, salt), salt)
 
 def GenerateHashForPassword(password):
-    salt = GenerateRandomSalt
-    return GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt))
+    salt = GenerateRandomSalt(16)
+    return (GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt)), salt)
 
-#print (GenerateHashForPassword('test'))
+# print (GenerateHashForPassword('passwordServer'))
 
 """
 RSA Cryptographic Functions

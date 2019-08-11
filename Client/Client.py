@@ -59,7 +59,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         exit()
     
     # Send Clients UserID and Password Hash
-    salt = 'KE9C2mx6225XcC5isRIa/g=='
+    salt = "KE9C2mx6225XcC5isRIa/g=="
     userID = '2'
     password = 'passwordClient' 
     print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
@@ -71,14 +71,29 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     # Recieve Repo Owner ID and Password Hash (Also a random challenge string)
     # Compare with Local Database
-    ServerPasswordHash = '71eb1246bc9baeef38afe9b3f58291c9300bcfc8eb781997a7b1eadf79b4d641' 
-
-
+    ServerPasswordHash = 'e541fc35f5a53d83b815042a21af51fba903c03321c61f7ca1d883f9bf52df63' 
+    RecievedPayload = RecieveTupleWithAES(s, SessionKey)
+    EncryptedChallengeString = RecievedPayload[0]
+    ServerIdentity = RecievedPayload[1]
+    if (ServerIdentity) != ('1', ServerPasswordHash):
+        print('Recieved Unknown Request\nTerminating...')
+        exit()
+    
     # Encrypt Challenge String with Private Key.
+    ClientKey = ReadRSAKeysFromDisk(ClientKeyFolder)
+    ChallengeString = DecryptWithRSA(ClientKey[0], EncryptedChallengeString)
+
+    # Send to Server
+    SendWithAES(s, SessionKey, ChallengeString)
 
     # Recieve successful response.
+    response = RecieveWithAES(s, SessionKey)
+    if response != b'Success':
+        print('Recieved Unknown Request\nTerminating...')
+        exit()
 
     # Secure Connection Established
+    print('Secure Connection Established')
     
 
 

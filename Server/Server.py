@@ -56,6 +56,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
             # Recieve a session key which is decrypted using server private key.
             ServerKey = ReadRSAKeysFromDisk(ServerKeyFolder)
+            ClientPublicKey = ReadRSAPublicKeyFromDisk(ClientPublicKeyFolder)
             EncryptedSessionKey = data
             SessionKey = DecryptWithRSA(ServerKey[0], EncryptedSessionKey)
 
@@ -67,22 +68,33 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             # Receive Client Identity, Compare UserID and Password Hash with server database.
             ClientPasswordHash = '073f9dd9d134206828ea34f8d1c81b5150973fe7c470358f4e59528f8bc284a8'
             clientIdentity = RecieveTupleWithAES(conn, SessionKey)
-            print(clientIdentity)
             if (clientIdentity) != ('2', ClientPasswordHash):
                 print('Recieved Unknown Request\nTerminating...')
                 exit()
 
             # Send Server Repo Owner ID, Password Hash, Random Challenge String
-            salt = 'iOJDsoomr0YATKGwsaoN3A=='
+            salt = "b'qSIkoYy8uPzdAGET9/5aRA=='"
             ownerID = '1'
             password = 'passwordServer' 
             print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
             #ownerID = input('Enter your OwnerID: ')
             #password = getpass.getpass()
+            challengeString = pickle.dumps(GenerateRandomSalt(16))
+            encryptedChallengeString = EncryptWithRSA(ClientPublicKey, challengeString)
 
-            # Decrypt challenge string with clients public key, verify the challenge string matches.
+            serverIdentity = (ownerID, GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt)))
+            payload = (encryptedChallengeString, serverIdentity)
+            SendTupleWithAES(conn, SessionKey, payload)
+
+            # Decrypt challenge string verify the challenge string matches.
+            RecievedChallengeString = RecieveWithAES(conn, SessionKey)
+            if challengeString != RecievedChallengeString:
+                print('Recieved Unknown Request\nTerminating...')
+                exit()
 
             # Secure Connection Established
+            SendWithAES(conn, SessionKey, b'Success')
+            print('Secure Connection Established')
 
 
 
