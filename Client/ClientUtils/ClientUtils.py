@@ -18,6 +18,90 @@ from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 # Import Crypto Utility Files
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
+# Meta Related Functions
+METAPath = 'ClientData/'
+UserMetaPath = METAPath + 'UserMETA.info'
+UserPath = METAPath + 'Users/'
+
+#  Reads a given META file and returns a list.
+def ReadMeta(metaFileLocation):
+    # Check if the given META file exists.
+    exists = os.path.isfile(metaFileLocation)
+    if exists:
+        # Load in the Pre-Definied META Information
+        try:
+            # Load each line of the META file into a list.
+            tmp_list=[]
+            with open (metaFileLocation) as meta:
+                for line in meta:
+                    tmp_list.append(line.strip())
+                meta.close()
+            
+            # Attempt to Check if Meta file is of a valid format.
+            if len(tmp_list) < 1:
+                print("Corrupted Host_Meta file, please initialize again")
+                sys.exit(-1)
+
+            return tmp_list
+
+        except:
+            print("Corrupted Host_Meta file, please initialize again.\nTerminating...")
+            sys.exit(-1)
+
+
+    else:
+        # META file does not exist, terminate program.
+        print(metaFileLocation)
+        print('META File Is Missing\nTerminating...')
+        exit(-1)
+
+# Check if given userID exists
+# e.g. print(CheckUserExist('s23456'))
+def CheckUserExist(userID):
+    userList = ReadMeta(UserMetaPath)
+    for user in userList:
+        if user == userID:
+            return True
+    return False
+
+def GetUserData(userID):
+    if CheckUserExist(userID):
+        UserFilePath = UserPath + userID + '.info'
+        exists = os.path.isfile(UserFilePath)
+        if exists:
+            UserData = ReadMeta(UserFilePath)
+            return UserData
+        else:
+            return ['']
+
+def CheckUserRole(userID):
+    UserData = GetUserData(userID)
+    if UserData is not None:
+        return UserData[1]
+
+def CheckRepoOwner(userID):
+    UserRole = CheckUserRole(userID)
+    return UserRole == 'RepoOwner'
+
+def LoginUser(userID, password):
+    if CheckUserExist(userID):
+        UserData = GetUserData(userID)
+        Hash = UserData[2]
+        Salt = UserData[3]
+        hashedPassword = GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(Salt))
+        if Hash == hashedPassword:
+            return (True, Hash)
+        else:
+            return (False, '')
+
+def GetUserPasswordHash(userID):
+    UserData = GetUserData(userID)
+    if UserData is not None:
+        return UserData[2]
+
+
+
+
 # Login
 def Login():
     salt = "KE9C2mx6225XcC5isRIa/g=="

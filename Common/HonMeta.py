@@ -107,7 +107,8 @@ RepoOwnerID META
 
 """
 UserID META
-[UserID Role]
+[UserID]
+[UserID Role] (RepoOwner/PrincipalAdmin/BackupAdmin/Examiner)
 [UserID Password Hash]
 [UserID Password Salt]
 [UserID Module]

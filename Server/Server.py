@@ -24,11 +24,12 @@ from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, Verif
 
 # Import Server Utility Files
 sys.path.append(os.path.abspath("../Server/ServerUtils"))
-from ServerUtils import EstablishSecureServerConnection
+from ServerUtils import CheckUserExist, GetUserData, CheckUserRole, CheckRepoOwner, LoginUser, GetUserPasswordHash, EstablishSecureServerConnection
 
 
 # Declare
 MetaFolder = 'ServerData/'
+HostMetaLocation = MetaFolder + 'HostMETA.info'
 ServerKeyFolder = 'ServerData/ServerKeys'
 ClientPublicKeyFolder = 'ServerData/PublicKeys/'
 
@@ -40,9 +41,6 @@ PrincipalAdminID = ''
 BackupAdminIDs = []
 
 PasswordHash    = ''
-
-
-
 
 # HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 # PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
@@ -87,7 +85,6 @@ def ReadMeta(metaFileLocation):
 # Load the Host Meta File
 def LoadMeta():
     # Host Meta
-    HostMetaLocation = MetaFolder + 'HostMETA.info'
     print(HostMetaLocation)
     tmp_list = ReadMeta(HostMetaLocation)
     """
@@ -111,16 +108,19 @@ def LoadMeta():
 
     if (len(tmp_list) > 3):
         for baID in range(3, (len(tmp_list)-1)):
-            BackupAdminIDs.append(baID)
+            if tmp_list[baID] != None and len(tmp_list[baID].strip())>0:
+                BackupAdminIDs.append(tmp_list[baID])
 
 def OwnerAuthenticate(RepoOwnerID):
-    # Authenticate here!
-    return True
+    return CheckRepoOwner(RepoOwnerID)
 
 def PasswordAuthenticate(RepoOwnerID, Password):
-    # Authenticate here!
-    # Set Password Hash
-    return True
+    global PasswordHash
+    response = LoginUser(RepoOwnerID, Password)
+    if response[0]:
+        # Set Password Hash
+        PasswordHash = response[1]
+    return response
 
 def UserSetup():
 
@@ -166,7 +166,8 @@ def UserSetup():
 
     # Verify Repo Owner Password
     print("Exam Repo Owner Authentication Passed. Please login.")
-    password = getpass.getpass()
+    #password = getpass.getpass()
+    password = 'passwordServer'
     if not PasswordAuthenticate(RepoOwnerID, password):
         print("Password Authentication Failed.\nTerminating...")
         sys.exit(-1)
@@ -174,19 +175,28 @@ def UserSetup():
     # Backup Administrator List
     print("Authentication Success.\nNow, Review and Update the Backup Administrator list.")
     newBackupAdminIDs = []
-    for bkup in BackupAdminIDs:
-        newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1}=>",bkup)
-        if newID != None and len(newID.strip())>0:
-            newBackupAdminIDs.append(newID.strip())
+    if len(BackupAdminIDs) > 0:
+        for bkup in BackupAdminIDs:
+            newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>",bkup)
+            if newID != None and len(newID.strip())>0:
+                newBackupAdminIDs.append(newID.strip())
     while True:
-        newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1} => ","")
+        newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>","")
         if newID != None and len(newID.strip())>0:
             newBackupAdminIDs.append(newID.strip())
         else:
             break
-
-
-
+    
+    # Everything is Confirmed.
+    # Update the Host_META.info
+    with open(HostMetaLocation,'w') as meta:
+        print(PortNumber,file=meta)
+        print(RepoOwnerID,file=meta)
+        print(PrincipalAdminID,file=meta)
+        for bAdmin in BackupAdminIDs:
+            print(bAdmin,file=meta)   
+        meta.close()
+# End UserSetup()
 
 # Server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -211,7 +221,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 exit(-1)
             
             # Establish A Secure Connection with the client
-            SessionKey = EstablishSecureServerConnection(conn, ServerKeyFolder, ClientPublicKeyFolder, data)
+            SessionKey = EstablishSecureServerConnection(RepoOwnerID, PasswordHash, conn, ServerKeyFolder, ClientPublicKeyFolder, data)
     
     #############################################################
     s.close
