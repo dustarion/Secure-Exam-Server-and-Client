@@ -1,3 +1,4 @@
+# common module for AY20192020 S1 .
 # ST2504 - ACG assginment2 (sample code)
 # source: exam_util.py
 # ver. 1.2 (jun 2019)
@@ -5,7 +6,6 @@
 #   -slow down the block_send speed to avoid TCP errors.
 # Author: Karl Kwan
 # Date: May 2019
-
 import os
 import socket
 import readline
