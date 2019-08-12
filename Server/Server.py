@@ -34,13 +34,13 @@ ServerKeyFolder = 'ServerData/ServerKeys'
 ClientPublicKeyFolder = 'ServerData/PublicKeys/'
 
 # Initialise
-ServerIP       = '127.0.0.1'
-PortNumber     = 99999
-RepoOwnerID    = ''
+ServerIP = '127.0.0.1'
+PortNumber = 99999
+RepoOwnerID = ''
 PrincipalAdminID = ''
 BackupAdminIDs = []
 
-PasswordHash    = ''
+PasswordHash = ''
 
 # HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 # PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
@@ -166,8 +166,7 @@ def UserSetup():
 
     # Verify Repo Owner Password
     print("Exam Repo Owner Authentication Passed. Please login.")
-    #password = getpass.getpass()
-    password = 'passwordServer'
+    password = getpass.getpass()
     if not PasswordAuthenticate(RepoOwnerID, password):
         print("Password Authentication Failed.\nTerminating...")
         sys.exit(-1)

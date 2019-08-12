@@ -1,24 +1,23 @@
-# ST2504 - ACG assginment2 (sample code)
-# source: exam_util.py
-# ver. 1.2 (jun 2019)
+# ST2504 - ACG assginment2
 #   - ensure  block_recv is using timeout to detect end of data stream.
 #   -slow down the block_send speed to avoid TCP errors.
-# Author: Karl Kwan
-# Date: May 2019
 
 import os
 import socket
 import readline
 from time import sleep
+
 class Payload():
-    # A data class to encapusule all the Examination Paper Repositroy payload
+    # A data class to encapusule all the Examination Paper Repo Payload
     def __init__(self):
         self.staff_id=''
         self.mod_code=''
         self.exam_fn=''
         self.sol_fn=''
-        self.exam_qns = '' # contain the exam question paper in bytes 
-        self.exam_sol =''  # contain the solution in bytes
+        self.exam_qns = '' # contain the encrypted exam question paper in bytes 
+        self.exam_sol =''  # contain the encrypted solution in bytes
+        self.hybridKeys = ''
+    
 class Con_header():
     # A data class to encapusule the connection request header
     # A client sends in its request using an object of Con_header
@@ -28,6 +27,7 @@ class Con_header():
         self.mod_code=''        # optional field to specify the target module.
         self.uploader_id=''     # optional filed only required by the retrieve payload request
         self.payload_size=0     # optional field to specify the payload size.
+
 class Resp_header():
     # A data class to encapusule the connection reponse header
     # The server sends its response to a client request using an object of Resp_header
@@ -36,6 +36,7 @@ class Resp_header():
         self.p_admin_id=''   # optional field - contains the principal exam admin id   
         self.others = []     # optional field - contains a list of backup exam admin ids.
         self.payload_size=0  # optional field - contains the payload_size for a retrieve request.
+
 class Repolist():
     # A data class to encapusule all the Examination Paper Repositroy payload
     def __init__(self):

@@ -103,21 +103,21 @@ def GetUserPasswordHash(userID):
 
 
 # Login
-def Login():
-    salt = "KE9C2mx6225XcC5isRIa/g=="
-    userID = '2'
-    password = 'passwordClient' 
-    print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
+def Login(clientID, passwordHash):
+    #salt = "KE9C2mx6225XcC5isRIa/g=="
+    #userID = '2'
+    #password = 'passwordClient' 
+    #print('\n[Login]\nNote that your password will not show when you type for security reasons.\n')
     #userID = input('Enter your UserID: ')
     #password = getpass.getpass()
 
-    clientIdentity = (userID, GenerateHashWithSalt(pickle.dumps(password), pickle.dumps(salt)))
+    clientIdentity = (clientID, passwordHash)
 
     return clientIdentity
 
 
 # Client Secure Connection
-def EstablishSecureClientConnection(socket, ClientKeyFolder, ServerPublicKeyFolder):
+def EstablishSecureClientConnection(repoOwnerID, clientID, passwordHash, socket, ClientKeyFolder, ServerPublicKeyFolder):
     # Generate Session Key
     SessionKey = GenerateAESKey()
 
@@ -136,16 +136,18 @@ def EstablishSecureClientConnection(socket, ClientKeyFolder, ServerPublicKeyFold
         exit(-1)
     
     # Send Clients UserID and Password Hash
-    clientIdentity = Login()
+    clientIdentity = Login(clientID, passwordHash)
+
     SendTupleWithAES(socket, SessionKey, clientIdentity)
 
     # Recieve Repo Owner ID and Password Hash (Also a random challenge string)
     # Compare with Local Database
-    ServerPasswordHash = 'e541fc35f5a53d83b815042a21af51fba903c03321c61f7ca1d883f9bf52df63' 
+    #ServerPasswordHash = 'e541fc35f5a53d83b815042a21af51fba903c03321c61f7ca1d883f9bf52df63' 
+    ServerPasswordHash = GetUserPasswordHash(repoOwnerID)
     RecievedPayload = RecieveTupleWithAES(socket, SessionKey)
     EncryptedChallengeString = RecievedPayload[0]
     ServerIdentity = RecievedPayload[1]
-    if (ServerIdentity) != ('1', ServerPasswordHash):
+    if len(ServerIdentity) != 2:
         print('Recieved Unknown Request\nTerminating...')
         exit(-1)
     

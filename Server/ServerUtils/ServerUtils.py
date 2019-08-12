@@ -117,7 +117,6 @@ def EstablishSecureServerConnection(ownerID, passwordHash, socket, ServerKeyFold
 
     # Recieve a session key which is decrypted using server private key.
     ServerKey = ReadRSAKeysFromDisk(ServerKeyFolder)
-    ClientPublicKey = ReadRSAPublicKeyFromDisk(ClientPublicKeyFolder)
     EncryptedSessionKey = data
     SessionKey = DecryptWithRSA(ServerKey[0], EncryptedSessionKey)
 
@@ -133,8 +132,12 @@ def EstablishSecureServerConnection(ownerID, passwordHash, socket, ServerKeyFold
     if len(clientIdentity) != 2:
         print('Recieved Unknown Request\nTerminating...')
         exit(-1)
+
     
     ClientPasswordHash = GetUserPasswordHash(clientIdentity[0])
+    ClientPublicKeyFilePath = ClientPublicKeyFolder + clientIdentity[0]
+    ClientPublicKey = ReadRSAPublicKeyFromDisk(ClientPublicKeyFilePath)
+
 
     # Send Server Repo Owner ID, Password Hash, Random Challenge String
     serverIdentity = Login(ownerID, passwordHash)
@@ -149,7 +152,7 @@ def EstablishSecureServerConnection(ownerID, passwordHash, socket, ServerKeyFold
     # Decrypt challenge string verify the challenge string matches.
     RecievedChallengeString = RecieveWithAES(socket, SessionKey)
     if challengeString != RecievedChallengeString:
-        print('Recieved Unknown Request\nTerminating...')
+        print('Recieved Bad Challenge String\nTerminating...')
         exit(-1)
 
     # Secure Connection Established
