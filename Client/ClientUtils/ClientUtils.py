@@ -19,7 +19,7 @@ from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
 # Meta Related Functions
-METAPath = 'ClientData/'
+METAPath = '../ClientData/'
 UserMetaPath = METAPath + 'UserMETA.info'
 UserPath = METAPath + 'Users/'
 
@@ -99,8 +99,22 @@ def GetUserPasswordHash(userID):
     if UserData is not None:
         return UserData[2]
 
+def GetAdminIDs():
+    userList = ReadMeta(UserMetaPath)
+    adminList = []
+    for user in userList:
+        role = CheckUserRole(user)
+        if role == 'PrincipalAdmin' or role == 'BackupAdmin':
+            adminList.append(user)
+    return adminList
 
+# Get the public key of the specified user.
+def GetUserKey(userID):
+    FolderKeyPath = METAPath + 'PublicKeys/' + userID
+    return ReadRSAPublicKeyFromDisk(FolderKeyPath)
 
+# Test Code
+# print(GetUserKey('s34567').exportKey())
 
 # Login
 def Login(clientID, passwordHash):
@@ -170,23 +184,49 @@ def EstablishSecureClientConnection(repoOwnerID, clientID, passwordHash, socket,
     return (SessionKey)
 
 # Exam Uploading / Downloading!
-"""
-def UploadExamToServer():
-    ExamQnFileLocation = '../Uploads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
-    ExamQnLocation2 = '../Downloads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
-    PublicKeys = []
-    #ExamAnsFileLocation = ''
+def UploadExamToServer(staffID, modCode):
+
+    # Force Feed Temp
+    ExamFilePath = '../Uploads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
+    SolnFilePath = '../Uploads/ST2504/AY20132014S2_ST2504_Sol.v1.pdf'
+    AdminList = GetAdminIDs()
+    AdminKeys = []
+    for admin in AdminList:
+        tmp = PayloadKey()
+        tmp.staffID = admin
+        row = (tmp, GetUserKey(admin))
+        AdminKeys.append(row)
 
     # Convert PDF to Bytes
-    ExamQnBytes = open(ExamQnFileLocation, 'rb').read()
+    ExamQnBytes = open(ExamFilePath, 'rb').read()
+    ExamSolnBytes = open(SolnFilePath, 'rb').read()
 
     # Generate a AES key to seal the files.
     SealKey = GenerateAESKey()
 
     # Format: (iv, cipherData)
     EncryptedExamQn = EncryptWithAES(SealKey, ExamQnBytes)
-"""
+    EncryptedExamSoln = EncryptWithAES(SealKey, ExamSolnBytes)
 
+    # Encrypt the aes keys with rsa for each admin.
+    for row in AdminKeys:
+        pubKey = row[1]
+        newKey = EncryptWithRSA(pubKey, SealKey)
+        row[0].encryptedKey = newKey
+
+    HybridKeys = []
+    for row in AdminKeys:
+        HybridKeys.append(row[0])
+
+    # Construct a Payload Object
+    PayloadToSend = Payload()
+    PayloadToSend.staffID = staffID
+    PayloadToSend.modCode = 'ST2504'
+    PayloadToSend.examFn = 'AY20132014S2_ST2504_Exam.v1.pdf'
+    PayloadToSend.solFn = 'AY20132014S2_ST2504_Sol.v1.pdf'
+    PayloadToSend.examQns = ExamQnBytes
+    PayloadToSend.examSol = ExamSolnBytes
+    PayloadToSend.hybridKeys = HybridKeys
     
 
 
@@ -196,7 +236,7 @@ def UploadExamToServer():
 
 
 # Test Code
-#UploadExamToServer()
+UploadExamToServer()
 
 #DecryptedExamQn = DecryptWithAES(SealKey, EncryptedExamQn[0], EncryptedExamQn[1])
 # Convert Bytes to PDF

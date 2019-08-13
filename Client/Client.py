@@ -204,12 +204,40 @@ def UserSetup():
 # End UserSetup()
 def List():
     print('You Chose List')
+    # Incomplete
 
 def Upload():
     print('You Chose Upload')
 
+    # Get Module
+    ClientData = GetUserData(ClientID)
+    ClientModule = ClientData[4]
+
+    # Module Code
+    ClientModule = ExamHelper.MyInput("Module Code =>", ClientModule)
+    if (ClientModule == None) or (len(ClientModule) == 0):
+        print("Invalid Module Code\nTerminating...")
+        exit(-1)
+
+    # Exam File
+    examFilePath = input('File Path of Exam =>')
+    if (examFilePath == None) or (len(examFilePath) == 0):
+        print("Invalid File\nTerminating...")
+        exit(-1)
+
+    # Check File Exists
+
+    # Solution File
+    solutionFilePath = input('File Path of Solution =>')
+    if (solutionFilePath == None) or (len(solutionFilePath) == 0):
+        print("Invalid File\nTerminating...")
+        exit(-1)
+
+     # Check File Exists
+
 def Download():
     print('You Chose Download')
+    # Incomplete
 
 def UserChoice():
     # User has three options, Upload, Download, List
@@ -220,13 +248,10 @@ def UserChoice():
     choice = input("Your Choice: ")
 
     if choice == 'L' or choice == 'l':
-        print('You Chose List')
         List()
     elif choice == 'U' or choice == 'u':
-        print('You Chose Upload')
         Upload()
     elif choice == 'D' or choice == 'd':
-        print('You Chose Download')
         Download()
     else:
         print('\nInvalid Letter, try again.')
@@ -238,6 +263,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     ClientWelcomeMessage()
     LoadMeta()
     UserSetup()
+
+    # Temp
+    UserChoice()
+
+    exit(-1)
 
     # Client Start
     try:

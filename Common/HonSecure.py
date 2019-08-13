@@ -95,6 +95,8 @@ def SaveRSAKeysToDisk(key, keyFolder):
     pubHandle.write(key.publickey().exportKey())
     pubHandle.close()
 
+# SaveRSAKeysToDisk(GenerateRSAKeys(), 'Output')
+
 
 # Returns the keys saved to disk given the folder of the keys.
 def ReadRSAKeysFromDisk(keyFolder):
