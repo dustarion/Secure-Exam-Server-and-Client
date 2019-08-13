@@ -10,7 +10,7 @@ import pickle
 import struct
 
 # Import Common Utility Files
-from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+#from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
 
 # Import Crypto Utility Files
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES

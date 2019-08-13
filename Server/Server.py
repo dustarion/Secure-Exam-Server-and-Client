@@ -16,7 +16,8 @@ import getpass
 
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../Common"))
-from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+from examUtil import ExamHelper, Payload
+# from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
 from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES, SendTupleWithAES, RecieveTupleWithAES
 
 # Import Crypto Utility Files
@@ -133,7 +134,7 @@ def UserSetup():
     global PrincipalAdminID
 
     # Server Port Number
-    PortNumber = Exam_Helper.my_input("Server Port No. (9000-20000) =>", PortNumber)
+    PortNumber = ExamHelper.MyInput("Server Port No. (9000-20000) =>", PortNumber)
     if (PortNumber == None) or (len(PortNumber) == 0):
         print("Invalid Port Number\nTerminating...")
         exit(-1)
@@ -148,13 +149,13 @@ def UserSetup():
         exit(-1)
     
     # Repo Owner ID
-    RepoOwnerID = Exam_Helper.my_input("Repo owner ID =>", RepoOwnerID)
+    RepoOwnerID = ExamHelper.MyInput("Repo owner ID =>", RepoOwnerID)
     if (RepoOwnerID == None) or (len(RepoOwnerID) == 0):
         print("Invalid Repo Owner ID\nTerminating...")
         exit(-1)
     
     # Principal Exam Repo Administrator ID
-    PrincipalAdminID = Exam_Helper.my_input("Principal Exam Repo Administrator ID =>", PrincipalAdminID)
+    PrincipalAdminID = ExamHelper.MyInput("Principal Exam Repo Administrator ID =>", PrincipalAdminID)
     if (PrincipalAdminID == None) or (len(PrincipalAdminID) == 0):
         print("Invalid Principal Exam Repo Administrator ID\nTerminating...")
         exit(-1)
@@ -176,11 +177,11 @@ def UserSetup():
     newBackupAdminIDs = []
     if len(BackupAdminIDs) > 0:
         for bkup in BackupAdminIDs:
-            newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>",bkup)
+            newID=ExamHelper.MyInput(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>",bkup)
             if newID != None and len(newID.strip())>0:
                 newBackupAdminIDs.append(newID.strip())
     while True:
-        newID=Exam_Helper.my_input(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>","")
+        newID=ExamHelper.MyInput(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>","")
         if newID != None and len(newID.strip())>0:
             newBackupAdminIDs.append(newID.strip())
         else:

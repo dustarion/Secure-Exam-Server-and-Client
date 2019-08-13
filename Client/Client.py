@@ -16,7 +16,8 @@ import getpass
 
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../Common"))
-from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+from examUtil import ExamHelper, Payload
+#Con_header, Resp_header, Repolist, Exam_Helper
 from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES, SendTupleWithAES, RecieveTupleWithAES
 
 # Import Crypto Utility Files
@@ -144,13 +145,13 @@ def UserSetup():
     global PrincipalAdminID
 
     # Server IP
-    ServerIP = Exam_Helper.my_input("Server IP address =>", ServerIP)
+    ServerIP = ExamHelper.MyInput("Server IP address =>", ServerIP)
     if (ServerIP == None) or (len(ServerIP) == 0):
         print("Invalid Server IP\nTerminating...")
         exit(-1)
 
     # Server Port Number
-    PortNumber = Exam_Helper.my_input("Server Port No. (9000-20000) =>", PortNumber)
+    PortNumber = ExamHelper.MyInput("Server Port No. (9000-20000) =>", PortNumber)
     if (PortNumber == None) or (len(PortNumber) == 0):
         print("Invalid Port Number\nTerminating...")
         exit(-1)
@@ -165,13 +166,13 @@ def UserSetup():
         exit(-1)
     
     # Repo Owner ID
-    RepoOwnerID = Exam_Helper.my_input("Repo owner ID =>", RepoOwnerID)
+    RepoOwnerID = ExamHelper.MyInput("Repo owner ID =>", RepoOwnerID)
     if (RepoOwnerID == None) or (len(RepoOwnerID) == 0):
         print("Invalid Repo Owner ID\nTerminating...")
         exit(-1)
     
     # Staff ID
-    ClientID = Exam_Helper.my_input("Staff ID =>", ClientID)
+    ClientID = ExamHelper.MyInput("Staff ID =>", ClientID)
     if (ClientID == None) or (len(ClientID) == 0):
         print("Invalid Staff ID\nTerminating...")
         exit(-1)
@@ -201,7 +202,35 @@ def UserSetup():
             print(bAdmin,file=meta)
         meta.close()
 # End UserSetup()
+def List():
+    print('You Chose List')
 
+def Upload():
+    print('You Chose Upload')
+
+def Download():
+    print('You Chose Download')
+
+def UserChoice():
+    # User has three options, Upload, Download, List
+    print("\nType the approriate letter to continue.")
+    print("L - List all exams.")
+    print("U - Upload an exams.")
+    print("D - Download an exams.")
+    choice = input("Your Choice: ")
+
+    if choice == 'L' or choice == 'l':
+        print('You Chose List')
+        List()
+    elif choice == 'U' or choice == 'u':
+        print('You Chose Upload')
+        Upload()
+    elif choice == 'D' or choice == 'd':
+        print('You Chose Download')
+        Download()
+    else:
+        print('\nInvalid Letter, try again.')
+        UserChoice() # Recursive Loop until a valid letter is entered.
 
 # Client
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -210,14 +239,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     LoadMeta()
     UserSetup()
 
-    print(ClientID)
-
     # Client Start
     try:
         s.connect((ServerIP, PortNumber))
 
         # Establish Secure Connection and Obtain Session Key
         SessionKey = EstablishSecureClientConnection(RepoOwnerID, ClientID, PasswordHash, s, ClientKeyFolder, ServerPublicKeyFolder)
+
+        # Ask the user what they want to do.
+        #UserChoice()
 
     except ConnectionRefusedError:
         print('\nUnable to Connect To Server.\nEnsure the server is on.\nTerminating...')

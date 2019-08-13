@@ -12,7 +12,7 @@ import getpass
 
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../../Common"))
-from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+from examUtil import ExamHelper, Payload
 from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES, SendTupleWithAES, RecieveTupleWithAES
 
 # Import Crypto Utility Files
@@ -128,6 +128,7 @@ def EstablishSecureServerConnection(ownerID, passwordHash, socket, ServerKeyFold
     # Receive Client Identity, Compare UserID and Password Hash with server database.
     #ClientPasswordHash = '073f9dd9d134206828ea34f8d1c81b5150973fe7c470358f4e59528f8bc284a8'
     clientIdentity = RecieveTupleWithAES(socket, SessionKey)
+    print(clientIdentity)
 
     if len(clientIdentity) != 2:
         print('Recieved Unknown Request\nTerminating...')
@@ -137,7 +138,6 @@ def EstablishSecureServerConnection(ownerID, passwordHash, socket, ServerKeyFold
     ClientPasswordHash = GetUserPasswordHash(clientIdentity[0])
     ClientPublicKeyFilePath = ClientPublicKeyFolder + clientIdentity[0]
     ClientPublicKey = ReadRSAPublicKeyFromDisk(ClientPublicKeyFilePath)
-
 
     # Send Server Repo Owner ID, Password Hash, Random Challenge String
     serverIdentity = Login(ownerID, passwordHash)

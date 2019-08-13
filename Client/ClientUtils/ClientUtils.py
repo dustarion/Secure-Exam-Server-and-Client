@@ -12,7 +12,7 @@ import getpass
 
 # Import Common Utility Files
 sys.path.append(os.path.abspath("../../Common"))
-from examUtil import Payload, Con_header, Resp_header, Repolist, Exam_Helper
+from examUtil import PayloadKey, Payload, UploadHeader, RespHeader  #, Con_header, Resp_header, Repolist, Exam_Helper
 from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES, SendTupleWithAES, RecieveTupleWithAES
 
 # Import Crypto Utility Files
@@ -123,9 +123,9 @@ def EstablishSecureClientConnection(repoOwnerID, clientID, passwordHash, socket,
 
     # Encrypt Session Key with Public Key of Server
     ServerPublicKey = ReadRSAPublicKeyFromDisk(ServerPublicKeyFolder)
-    Payload = EncryptWithRSA(ServerPublicKey, SessionKey)
+    TempPayload = EncryptWithRSA(ServerPublicKey, SessionKey)
 
-    sendMsg(socket, Payload)
+    sendMsg(socket, TempPayload)
 
     # Use Session Key to Descrypt and Encrypt from this point onwards.
 
@@ -168,3 +168,38 @@ def EstablishSecureClientConnection(repoOwnerID, clientID, passwordHash, socket,
     print('\nSecure Connection Established!\n')
 
     return (SessionKey)
+
+# Exam Uploading / Downloading!
+"""
+def UploadExamToServer():
+    ExamQnFileLocation = '../Uploads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
+    ExamQnLocation2 = '../Downloads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
+    PublicKeys = []
+    #ExamAnsFileLocation = ''
+
+    # Convert PDF to Bytes
+    ExamQnBytes = open(ExamQnFileLocation, 'rb').read()
+
+    # Generate a AES key to seal the files.
+    SealKey = GenerateAESKey()
+
+    # Format: (iv, cipherData)
+    EncryptedExamQn = EncryptWithAES(SealKey, ExamQnBytes)
+"""
+
+    
+
+
+
+
+
+
+
+# Test Code
+#UploadExamToServer()
+
+#DecryptedExamQn = DecryptWithAES(SealKey, EncryptedExamQn[0], EncryptedExamQn[1])
+# Convert Bytes to PDF
+    #f = open(ExamQnLocation2, 'wb')
+    #f.write(ExamBytes)
+
