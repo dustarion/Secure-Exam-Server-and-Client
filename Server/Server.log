@@ -1,0 +1,68 @@
+2019-08-16 23:00:42.632849	Connected by Client ('127.0.0.1', 57973)
+2019-08-16 23:00:42.641926	Secure Connection Established with Client
+2019-08-16 23:00:42.642588	Recieved Request From Client: L From: s45678
+2019-08-16 23:00:42.643355	Client Successfully Recieved Exam List
+2019-08-16 23:08:41.373381	Server Turned On
+2019-08-16 23:08:41.862129	Server Started By s12345
+2019-08-16 23:08:42.002590	s12345 sucessfully logged into the server.
+2019-08-16 23:08:42.139918	Server Started With The Following Config: s23456, []
+2019-08-16 23:08:42.141211	Waiting for Clients...
+2019-08-16 23:08:44.799531	Connected by Client ('127.0.0.1', 58218)
+2019-08-16 23:08:44.809888	Secure Connection Established with Client
+2019-08-16 23:14:11.333306	Server Turned On
+2019-08-16 23:14:12.128868	Server Started By s12345
+2019-08-16 23:14:12.255566	s12345 sucessfully logged into the server.
+2019-08-16 23:14:12.393658	Server Started With The Following Config: s23456, []
+2019-08-16 23:14:12.394202	Waiting for Clients...
+2019-08-16 23:14:21.998851	Connected by Client ('127.0.0.1', 58359)
+2019-08-16 23:14:22.008889	Secure Connection Established with Client
+2019-08-16 23:14:25.397398	Recieved Request From Client: L From: s45678
+2019-08-16 23:15:11.279213	Server Turned On
+2019-08-16 23:15:11.472053	Server Started By s12345
+2019-08-16 23:15:11.590069	s12345 sucessfully logged into the server.
+2019-08-16 23:15:12.429665	Server Started With The Following Config: s23456, []
+2019-08-16 23:15:12.430212	Waiting for Clients...
+2019-08-16 23:15:15.696947	Connected by Client ('127.0.0.1', 58385)
+2019-08-16 23:15:15.705048	Secure Connection Established with Client
+2019-08-16 23:15:25.891112	Recieved Request From Client: L From: s45678
+2019-08-16 23:16:44.966202	Server Turned On
+2019-08-16 23:16:45.148959	Server Started By s12345
+2019-08-16 23:16:45.278881	s12345 sucessfully logged into the server.
+2019-08-16 23:16:45.388995	Server Started With The Following Config: s23456, []
+2019-08-16 23:16:45.389589	Waiting for Clients...
+2019-08-16 23:16:48.197704	Connected by Client ('127.0.0.1', 58509)
+2019-08-16 23:16:48.206633	Secure Connection Established with Client
+2019-08-16 23:16:50.183713	Recieved Request From Client: L From: s45678
+2019-08-16 23:16:50.184964	Client Successfully Recieved Exam List
+2019-08-16 23:18:47.058062	Server Turned On
+2019-08-16 23:18:47.611960	Server Started By s12345
+2019-08-16 23:18:47.753201	s12345 sucessfully logged into the server.
+2019-08-16 23:18:47.902272	Server Started With The Following Config: s23456, []
+2019-08-16 23:18:47.902968	Waiting for Clients...
+2019-08-16 23:18:50.345158	Connected by Client ('127.0.0.1', 58565)
+2019-08-16 23:18:50.353750	Secure Connection Established with Client
+2019-08-16 23:18:51.845405	Recieved Request From Client: L From: s45678
+2019-08-16 23:18:51.846513	Client Successfully Recieved Exam List
+2019-08-16 23:20:03.232515	Connected by Client ('127.0.0.1', 58597)
+2019-08-16 23:20:03.239396	Secure Connection Established with Client
+2019-08-16 23:20:04.629658	Recieved Request From Client: L From: s45678
+2019-08-16 23:20:04.630521	Client Successfully Recieved Exam List
+2019-08-16 23:22:01.033466	Connected by Client ('127.0.0.1', 58655)
+2019-08-16 23:22:01.040841	Secure Connection Established with Client
+2019-08-16 23:22:03.605321	Recieved Request From Client: L From: s45678
+2019-08-16 23:22:03.606313	Client Successfully Recieved Exam List
+2019-08-16 23:22:56.486294	Server Turned On
+2019-08-16 23:22:56.677105	Server Started By s12345
+2019-08-16 23:22:56.823072	s12345 sucessfully logged into the server.
+2019-08-16 23:22:57.167478	Server Started With The Following Config: s23456, []
+2019-08-16 23:22:57.168188	Waiting for Clients...
+2019-08-16 23:23:00.086770	Connected by Client ('127.0.0.1', 58688)
+2019-08-16 23:23:00.095120	Secure Connection Established with Client
+2019-08-16 23:23:01.580207	Recieved Request From Client: L From: s45678
+2019-08-16 23:23:01.581122	Client Successfully Recieved Exam List
+2019-08-16 23:28:54.687482	Connected by Client ('127.0.0.1', 58852)
+2019-08-16 23:28:54.698959	Secure Connection Established with Client
+2019-08-16 23:32:18.975055	Recieved Request From Client: U From: s45678
+2019-08-16 23:32:18.977065	Successfully Recieved Payload from Client
+2019-08-16 23:34:38.324287	Connected by Client ('127.0.0.1', 59003)
+2019-08-16 23:34:38.333298	Secure Connection Established with Client

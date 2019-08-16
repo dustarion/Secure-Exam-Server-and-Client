@@ -32,12 +32,12 @@ class Payload():
     # A data class to encapusule all the Examination Paper Repo Payload
     def __init__(self):
         # META Information
-        self.staff_id=''
-        self.mod_code=''
-        self.exam_fn=''
-        self.sol_fn=''
-        self.exam_qns = '' # contain the aes encrypted exam question paper in bytes 
-        self.exam_sol =''  # contain the aes encrypted solution in bytes
+        self.staffID=''
+        self.modCode=''
+        self.examFn=''
+        self.solFn=''
+        self.examQns = '' # contain the aes encrypted exam question paper in bytes 
+        self.examSol =''  # contain the aes encrypted solution in bytes
         self.hybridKeys = [PayloadKey]
 
 
@@ -60,3 +60,5 @@ class RespHeader():
         self.p_admin_id=''   # optional field - contains the principal exam admin id   
         self.others = []     # optional field - contains a list of backup exam admin ids.
         self.payload_size=0  # optional field - contains the payload_size for a retrieve request.
+
+    

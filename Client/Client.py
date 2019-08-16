@@ -25,7 +25,7 @@ from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, Verif
 
 # Import Client Utility Files
 sys.path.append(os.path.abspath("../Client/ClientUtils"))
-from ClientUtils import CheckUserExist, GetUserData, CheckUserRole, CheckRepoOwner, LoginUser, GetUserPasswordHash, EstablishSecureClientConnection
+from ClientUtils import CheckUserExist, GetUserData, CheckUserRole, CheckRepoOwner, LoginUser, GetUserPasswordHash, EstablishSecureClientConnection, UploadExamToServer, ListExamsInServer, DownloadExamFromServer
 
 # Declare
 MetaFolder = 'ClientData/'
@@ -184,7 +184,7 @@ def UserSetup():
 
     # Verify Repo Owner Password
     print("Staff ID Authentication Passed. Please login.")
-    password = getpass.getpass()
+    #password = getpass.getpass()
     password = 'passwordClient'
     if not PasswordAuthenticate(ClientID, password):
         print("Password Authentication Failed.\nTerminating...")
@@ -201,13 +201,16 @@ def UserSetup():
         for bAdmin in BackupAdminIDs:
             print(bAdmin,file=meta)
         meta.close()
+
 # End UserSetup()
 def List():
     print('You Chose List')
-    # Incomplete
+    #ListExamsInServer(s, SessionKey, ClientID, RepoOwnerID)
+    ListExamsInServer(s, SessionKey, ClientID, RepoOwnerID)
 
 def Upload():
     print('You Chose Upload')
+    print('Ensure the files you want to upload are in the Upload folder')
 
     # Get Module
     ClientData = GetUserData(ClientID)
@@ -220,7 +223,8 @@ def Upload():
         exit(-1)
 
     # Exam File
-    examFilePath = input('File Path of Exam =>')
+    # Sample File Name = AY20132014S2_ST2504_Exam.v1.pdf
+    examFilePath = input('File Name of Exam =>')
     if (examFilePath == None) or (len(examFilePath) == 0):
         print("Invalid File\nTerminating...")
         exit(-1)
@@ -228,16 +232,33 @@ def Upload():
     # Check File Exists
 
     # Solution File
-    solutionFilePath = input('File Path of Solution =>')
+    # Sample File Name = AY20132014S2_ST2504_Sol.v1.pdf
+    solutionFilePath = input('File Name of Solution =>')
     if (solutionFilePath == None) or (len(solutionFilePath) == 0):
         print("Invalid File\nTerminating...")
         exit(-1)
 
-     # Check File Exists
+    # Check File Exists
+    # Sample = 'Uploads/ST2504/AY20132014S2_ST2504_Sol.v1.pdf'
+    SolnFilePath = 'Uploads/'+ ClientModule +'/' + solutionFilePath
+    ExamFilePath = 'Uploads/'+ ClientModule +'/' + examFilePath
+    UploadExamToServer(s, SessionKey, ClientID, RepoOwnerID, ClientModule, ExamFilePath, SolnFilePath)
+
+    
 
 def Download():
     print('You Chose Download')
-    # Incomplete
+    print('Enter the module code of the file you wish to download.')
+    # Get Module
+    ClientData = GetUserData(ClientID)
+    ClientModule = ClientData[4]
+
+    # Module Code
+    ClientModule = ExamHelper.MyInput("Module Code =>", ClientModule)
+    if (ClientModule == None) or (len(ClientModule) == 0):
+        print("Invalid Module Code\nTerminating...")
+        exit(-1)
+    DownloadExamFromServer(s, SessionKey, ClientKeyFolder, ClientID, RepoOwnerID, ClientModule)
 
 def UserChoice():
     # User has three options, Upload, Download, List
@@ -265,9 +286,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     UserSetup()
 
     # Temp
-    UserChoice()
-
-    exit(-1)
+    #UserChoice()
 
     # Client Start
     try:
@@ -277,7 +296,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         SessionKey = EstablishSecureClientConnection(RepoOwnerID, ClientID, PasswordHash, s, ClientKeyFolder, ServerPublicKeyFolder)
 
         # Ask the user what they want to do.
-        #UserChoice()
+        UserChoice()
 
     except ConnectionRefusedError:
         print('\nUnable to Connect To Server.\nEnsure the server is on.\nTerminating...')

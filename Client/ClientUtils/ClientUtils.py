@@ -19,9 +19,10 @@ from HonConnection import sendMsg, recvMsg, recvall, SendWithAES, RecieveWithAES
 from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, VerifyHash, GenerateHashWithSalt, VerifyHashWithSalt, GenerateSaltedHash, GenerateRSAKeys, ReadRSAKeysFromDisk, ReadRSAPublicKeyFromDisk, EncryptWithRSA, DecryptWithRSA, GenerateAESKey, EncryptWithAES, DecryptWithAES
 
 # Meta Related Functions
-METAPath = '../ClientData/'
+METAPath = 'ClientData/'
 UserMetaPath = METAPath + 'UserMETA.info'
 UserPath = METAPath + 'Users/'
+DownloadPath = 'Downloads/'
 
 #  Reads a given META file and returns a list.
 def ReadMeta(metaFileLocation):
@@ -183,12 +184,27 @@ def EstablishSecureClientConnection(repoOwnerID, clientID, passwordHash, socket,
 
     return (SessionKey)
 
-# Exam Uploading / Downloading!
-def UploadExamToServer(staffID, modCode):
+def CheckIfFolderExists(folderPath):
+    return os.path.exists(folderPath)
 
-    # Force Feed Temp
-    ExamFilePath = '../Uploads/ST2504/AY20132014S2_ST2504_Exam.v1.pdf'
-    SolnFilePath = '../Uploads/ST2504/AY20132014S2_ST2504_Sol.v1.pdf'
+# Data is a tuple of the data you want to write to the specified META file.
+def WriteToMeta(MetaFileLocation, Data):
+    with open(MetaFileLocation,'w+') as meta:
+        for row in Data:
+            print(row, file = meta)
+        meta.close()
+
+def WriteToFile(FilePath, Data):
+    f = open(FilePath, 'wb')
+    f.write(Data)
+    f.close
+
+# Exam Uploading / Downloading!
+def UploadExamToServer(socket, key, staffID, examRepoAdminID, modCode, ExamFilePath, SolnFilePath):
+
+    examFn = os.path.basename(ExamFilePath)
+    solFn = os.path.basename(SolnFilePath)
+
     AdminList = GetAdminIDs()
     AdminKeys = []
     for admin in AdminList:
@@ -221,25 +237,125 @@ def UploadExamToServer(staffID, modCode):
     # Construct a Payload Object
     PayloadToSend = Payload()
     PayloadToSend.staffID = staffID
-    PayloadToSend.modCode = 'ST2504'
-    PayloadToSend.examFn = 'AY20132014S2_ST2504_Exam.v1.pdf'
-    PayloadToSend.solFn = 'AY20132014S2_ST2504_Sol.v1.pdf'
-    PayloadToSend.examQns = ExamQnBytes
-    PayloadToSend.examSol = ExamSolnBytes
+    PayloadToSend.modCode = modCode
+    PayloadToSend.examFn = examFn
+    PayloadToSend.solFn = solFn 
+    PayloadToSend.examQns = EncryptedExamQn
+    PayloadToSend.examSol = EncryptedExamSoln
     PayloadToSend.hybridKeys = HybridKeys
+
+    # Construct the Header of Payload
+    PayloadToSendHeader = UploadHeader()
+    PayloadToSendHeader.requestType = 'U'
+    PayloadToSendHeader.requesterID = examRepoAdminID # Server Repo Admin for an examiner uploading to the server.
+    PayloadToSendHeader.modCode = modCode
+    PayloadToSendHeader.uploaderID = staffID # Examiner's ID
     
+    # Construct the final payload!
+    FinalPayload = (PayloadToSendHeader, PayloadToSend)
+    SendTupleWithAES(socket, key, FinalPayload)
+
+    # Should Recieve a successful response!
+    request = RecieveWithAES(socket, key)
+    if request != b'SuccessfullyRecievedExamPayload':
+        print('Recieved Unknown Request\nTerminating...')
+        exit(-1)
+    
+    print('Successfully Send Payload.\nThank You and Goodbye!\nTerminating...')
+    exit(-1)
+
+# Exam Uploading / Downloading!
+def ListExamsInServer(socket, key, staffID, examRepoAdminID):
+
+    # Construct the Header of Payload
+    PayloadToSendHeader = UploadHeader()
+    PayloadToSendHeader.requestType = 'L'
+    PayloadToSendHeader.requesterID = examRepoAdminID # Server Repo Admin for an examiner uploading to the server.
+    PayloadToSendHeader.modCode = ''
+    PayloadToSendHeader.uploaderID = staffID
+    
+    # Construct the final payload!
+    FinalPayload = (PayloadToSendHeader, 'None')
+    SendTupleWithAES(socket, key, FinalPayload)
+
+    # Should Recieve a successful response!
+    request = RecieveTupleWithAES(socket, key)
+    if not request:
+        print('No Files To List\nTerminating...')
+        exit(-1)
 
 
+    SendWithAES(b'SuccessfullyRecievedExamList')
 
+    print('File List:')
+    for row in request:
+        print (row)
 
+    print('Thank You and Goodbye!\nTerminating...')
+    exit(-1)
 
+def DownloadExamFromServer(socket, key, ClientKeyFolder, staffID, examRepoAdminID, modCode):
 
+    # Construct Request
+    # Construct the Header of Payload
+    PayloadToSendHeader = UploadHeader()
+    PayloadToSendHeader.requestType = 'D'
+    PayloadToSendHeader.requesterID = examRepoAdminID # Server Repo Admin for an examiner uploading to the server.
+    PayloadToSendHeader.modCode = modCode
+    PayloadToSendHeader.uploaderID = staffID
+    
+    # Construct the final payload!
+    FinalPayload = (PayloadToSendHeader, 'None')
+    SendTupleWithAES(socket, key, FinalPayload)
 
-# Test Code
-UploadExamToServer()
+    # Should Recieve a successful response!
+    request = RecieveTupleWithAES(socket, key)
+    if not request:
+        print('Recieved Unknown Request\nTerminating...')
+        exit(-1)
 
-#DecryptedExamQn = DecryptWithAES(SealKey, EncryptedExamQn[0], EncryptedExamQn[1])
-# Convert Bytes to PDF
-    #f = open(ExamQnLocation2, 'wb')
-    #f.write(ExamBytes)
+    ExamMetaData = request[0]
+    EncryptedExam = pickle.loads(request[1])
+    EncryptedSoln = pickle.loads(request[2])
+    keys = pickle.loads(request[3])
 
+    # Get the aes Key
+    SealKey = ''
+    for row in keys:
+        # CHANGE TO staffID ASAP
+        if row.staffID == 's23456':
+            SealKey = row.encryptedKey
+            break
+
+    # ClientKey = ReadRSAKeysFromDisk(ClientKeyFolder)
+    ClientKey = ReadRSAKeysFromDisk('../Common/Keys/s23456')
+
+    if SealKey != '':
+        SealKey = DecryptWithRSA(ClientKey[0], SealKey)
+
+    else:
+        print('Key Not Found\nTerminating...')
+        exit(-1)
+
+    ExamQnBytes = DecryptWithAES(SealKey, EncryptedExam[0], EncryptedExam[1])
+    ExamSolnBytes = DecryptWithAES(SealKey, EncryptedSoln[0], EncryptedSoln[1])
+
+    FolderPath = DownloadPath + modCode
+
+    # Make the Folders
+    if not os.path.exists(FolderPath):
+        os.mkdir(FolderPath)
+        print("Directory " , FolderPath ,  " Created ")
+    else:
+        print("Directory " , FolderPath ,  " already exists")
+
+    FolderPath += '/'
+
+    MetaFileLocation = FolderPath + 'META.info'
+    WriteToMeta(MetaFileLocation, ExamMetaData)
+
+    # Save Encrypted Exam and Encrypted Exam Solution
+    ExamFileLocation = FolderPath + ExamMetaData[3]
+    SolnFileLocation = FolderPath + ExamMetaData[4]
+    WriteToFile(ExamFileLocation, ExamQnBytes)
+    WriteToFile(SolnFileLocation, ExamSolnBytes)

@@ -25,7 +25,7 @@ from HonSecure import GenerateRandomKey, GenerateRandomSalt, GenerateHash, Verif
 
 # Import Server Utility Files
 sys.path.append(os.path.abspath("../Server/ServerUtils"))
-from ServerUtils import CheckUserExist, GetUserData, CheckUserRole, CheckRepoOwner, LoginUser, GetUserPasswordHash, EstablishSecureServerConnection
+from ServerUtils import LogMessage, CheckUserExist, GetUserData, CheckUserRole, CheckRepoOwner, LoginUser, GetUserPasswordHash, EstablishSecureServerConnection, RecieveRequestFromClient
 
 
 # Declare
@@ -153,6 +153,8 @@ def UserSetup():
     if (RepoOwnerID == None) or (len(RepoOwnerID) == 0):
         print("Invalid Repo Owner ID\nTerminating...")
         exit(-1)
+
+    LogMessage('Server Started By ' + RepoOwnerID)
     
     # Principal Exam Repo Administrator ID
     PrincipalAdminID = ExamHelper.MyInput("Principal Exam Repo Administrator ID =>", PrincipalAdminID)
@@ -163,11 +165,16 @@ def UserSetup():
     # Check that Repo Owner ID is confirmed
     if not OwnerAuthenticate(RepoOwnerID):
         print("Exam Repo Owner Authentication Failed.\nTerminating...")
+        LogMessage('Failed to Login Repo Owner ' + RepoOwnerID)
         sys.exit(-1)
+
+    LogMessage(RepoOwnerID + ' sucessfully logged into the server.')
 
     # Verify Repo Owner Password
     print("Exam Repo Owner Authentication Passed. Please login.")
-    password = getpass.getpass()
+    #TODO
+    #password = getpass.getpass()
+    password = 'passwordServer'
     if not PasswordAuthenticate(RepoOwnerID, password):
         print("Password Authentication Failed.\nTerminating...")
         sys.exit(-1)
@@ -177,7 +184,7 @@ def UserSetup():
     newBackupAdminIDs = []
     if len(BackupAdminIDs) > 0:
         for bkup in BackupAdminIDs:
-            newID=ExamHelper.MyInput(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>",bkup)
+            newID = ExamHelper.MyInput(f"Backup Administrator ID {len(newBackupAdminIDs)+1} =>", bkup)
             if newID != None and len(newID.strip())>0:
                 newBackupAdminIDs.append(newID.strip())
     while True:
@@ -186,6 +193,8 @@ def UserSetup():
             newBackupAdminIDs.append(newID.strip())
         else:
             break
+
+    LogMessage('Server Started With The Following Config: ' + PrincipalAdminID + ', '+ str(newBackupAdminIDs))
     
     # Everything is Confirmed.
     # Update the Host_META.info
@@ -199,6 +208,7 @@ def UserSetup():
 # End UserSetup()
 
 # Server
+LogMessage('Server Turned On')
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     # Setup
@@ -210,11 +220,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((ServerIP, PortNumber))
     s.listen(5) # Up to 5 Clients
     print ('Waiting for clients...')
+    LogMessage('Waiting for Clients...')
 
     while True: # Run the server continuously
         conn, addr = s.accept() # Accept Connection from Client
         with conn:
             print('Connected by Client', addr)
+            LogMessage('Connected by Client ' + str(addr))
             data = recvMsg(conn)
             if not data:
                 print('Recieved Unknown Request\nTerminating...')
@@ -222,6 +234,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             
             # Establish A Secure Connection with the client
             SessionKey = EstablishSecureServerConnection(RepoOwnerID, PasswordHash, conn, ServerKeyFolder, ClientPublicKeyFolder, data)
+
+            RecieveRequestFromClient(conn, SessionKey)
     
     #############################################################
     s.close

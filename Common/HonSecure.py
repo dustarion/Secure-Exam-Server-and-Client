@@ -127,7 +127,7 @@ def EncryptWithRSA(publicKey, sessionKey):
     encryptedSessionKey = cipherRSA.encrypt(sessionKey)
     return encryptedSessionKey
 
-def  DecryptWithRSA(key, encryptedSessionKey):
+def DecryptWithRSA(key, encryptedSessionKey):
     cipherRSA = PKCS1_OAEP.new(key)
     sessionKey = cipherRSA.decrypt(encryptedSessionKey)
     return sessionKey
